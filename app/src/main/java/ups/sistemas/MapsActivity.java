@@ -12,6 +12,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -37,7 +38,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Add a marker in Sydney and move the camera
         LatLng cuenca = new LatLng(-2.897482, -79.004537);
         mMap.addMarker(new MarkerOptions().position(cuenca).title("Marcador en Cuenca-EC"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(cuenca));
 
+        //posicion de la camara
+        CameraPosition position = new CameraPosition.Builder()
+                .target(cuenca)                                                                     //target objetivo
+                .zoom(20)
+                .bearing(145)                                                                        //orientacion de la camara hacia el este 90 grados 0-365
+                .tilt(90)
+                .build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(cuenca));
     }
 }
