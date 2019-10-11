@@ -1,6 +1,7 @@
 package ups.sistemas.fragments;
 
 
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,6 +75,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        checkIfGpsActivate();
+    }
+
+
+    @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         //zoom minimo y maximo permitido
@@ -108,7 +117,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     @Override
     public void onMarkerDrag(Marker marker) {
-        
+
     }
 
     @Override
@@ -131,5 +140,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         marker.setSnippet("Direcciones: "+direcciones+"\n"+
                 "Codigo Postal: "+codigoPostal+"\n");
         marker.showInfoWindow();
+    }
+
+    private void checkIfGpsActivate(){
+        //preguntar por el gps
+        try {
+            int gps = Settings.Secure.getInt(getActivity().getContentResolver(), Settings.Secure.LOCATION_MODE);
+            if(gps == 0){
+                Toast.makeText(getContext(), "Gps no esta activado", Toast.LENGTH_SHORT).show();
+                Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(i);
+            }
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
