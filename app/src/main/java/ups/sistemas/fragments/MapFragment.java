@@ -19,6 +19,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -42,6 +44,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     private Geocoder geocoder;
     private List<Address> address;
+
+    private MarkerOptions marker;
 
     public MapFragment() {
 
@@ -71,7 +75,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
         //zoom minimo y maximo permitido
         mMap.setMinZoomPreference(15);
         mMap.setMaxZoomPreference(20);
@@ -80,7 +83,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         LatLng cuenca = new LatLng(-2.897482, -79.004537);
         //zoom al marcador
         CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
-        mMap.addMarker(new MarkerOptions().position(cuenca).title("Marcador en Cuenca-EC").draggable(true));
+
+        //instanciamos el nuevo marcador
+        marker = new MarkerOptions();
+        marker.position(cuenca);
+        marker.title("Mi marcador");
+        marker.draggable(true);
+        marker.snippet("Soy un marcador personalizado");
+        marker.icon(BitmapDescriptorFactory.fromResource(android.R.drawable.star_on));
+        mMap.addMarker(marker);
+        //mMap.addMarker(new MarkerOptions().position(cuenca).title("Marcador en Cuenca-EC").draggable(true));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(cuenca));
         mMap.animateCamera(zoom);
         mMap.setOnMarkerDragListener(this);
@@ -115,11 +127,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         String estado = address.get(0).getAdminArea();
         String pais = address.get(0).getCountryName();
         String codigoPostal = address.get(0).getPostalCode();
-        Toast.makeText(getContext(), "Direcciones: "+direcciones+"\n"+
-                                            "Ciudad: "+ciudad+"\n"+
-                                            "Provincia: "+estado+"\n"+
-                                            "Pais: "+pais+"\n"+
-                                            "Codigo Postal: "+codigoPostal+"\n"
-                , Toast.LENGTH_LONG).show();
+        marker.setSnippet("Direcciones: "+direcciones+"\n"+
+                "Ciudad: "+ciudad+"\n"+
+                "Provincia: "+estado+"\n"+
+                "Pais: "+pais+"\n"+
+                "Codigo Postal: "+codigoPostal+"\n");
     }
 }
