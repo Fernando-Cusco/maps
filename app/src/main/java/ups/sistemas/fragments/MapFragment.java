@@ -1,6 +1,8 @@
 package ups.sistemas.fragments;
 
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -21,17 +24,24 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 import ups.sistemas.R;
 import ups.sistemas.activities.MapsActivity;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerDragListener {
 
     private View rootView;
     private GoogleMap mMap;
     private MapView mapView;
+
+    private Geocoder geocoder;
+    private List<Address> address;
 
     public MapFragment() {
 
@@ -68,49 +78,48 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         // Add a marker in Sydney and move the camera
         LatLng cuenca = new LatLng(-2.897482, -79.004537);
+        //zoom al marcador
+        CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
         mMap.addMarker(new MarkerOptions().position(cuenca).title("Marcador en Cuenca-EC").draggable(true));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(cuenca));
+        mMap.animateCamera(zoom);
+        mMap.setOnMarkerDragListener(this);
 
-        //posicion de la camara
-        CameraPosition position = new CameraPosition.Builder()
-                .target(cuenca)                                                                     //target objetivo
-                .zoom(20)
-                .bearing(145)                                                                        //orientacion de la camara hacia el este 90 grados 0-365
-                .tilt(90)
-                .build();
-        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(cuenca));
+        geocoder = new Geocoder(getContext(), Locale.getDefault());
 
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                Toast.makeText(getContext(), "Corto", Toast.LENGTH_SHORT).show();
-            }
-        });
+    }
 
-        //cuando presionamos por un rato
-        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-            @Override
-            public void onMapLongClick(LatLng latLng) {
-                Toast.makeText(getContext(), "Largo", Toast.LENGTH_SHORT).show();
-            }
-        });
+    @Override
+    public void onMarkerDragStart(Marker marker) {
 
-        //cuando necesitos arrastrar el marcador
-        mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
-            @Override
-            public void onMarkerDragStart(Marker marker) {
-                Toast.makeText(getContext(), "empezando a arrastrar: "+marker.getPosition().latitude +" "+marker.getPosition().longitude, Toast.LENGTH_SHORT).show();
-            }
+    }
 
-            @Override
-            public void onMarkerDrag(Marker marker) {
-                Toast.makeText(getContext(), "arrastrando: "+marker.getPosition().latitude +" "+marker.getPosition().longitude, Toast.LENGTH_SHORT).show();
-            }
+    @Override
+    public void onMarkerDrag(Marker marker) {
 
-            @Override
-            public void onMarkerDragEnd(Marker marker) {
-                Toast.makeText(getContext(), "empezando a soltar: "+marker.getPosition().latitude +" "+marker.getPosition().longitude, Toast.LENGTH_SHORT).show();
-            }
-        });
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+        double latitud = marker.getPosition().latitude;
+        double longitud = marker.getPosition().longitude;
+
+        try {
+            //recuperamos la lista de direcciones
+            address = geocoder.getFromLocation(latitud, longitud, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String direcciones = address.get(0).getAddressLine(0);
+        String ciudad = address.get(0).getLocality();
+        String estado = address.get(0).getAdminArea();
+        String pais = address.get(0).getCountryName();
+        String codigoPostal = address.get(0).getPostalCode();
+        Toast.makeText(getContext(), "Direcciones: "+direcciones+"\n"+
+                                            "Ciudad: "+ciudad+"\n"+
+                                            "Provincia: "+estado+"\n"+
+                                            "Pais: "+pais+"\n"+
+                                            "Codigo Postal: "+codigoPostal+"\n"
+                , Toast.LENGTH_LONG).show();
     }
 }
