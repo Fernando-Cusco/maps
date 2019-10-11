@@ -103,12 +103,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     @Override
     public void onMarkerDragStart(Marker marker) {
-
+        marker.hideInfoWindow();
     }
 
     @Override
     public void onMarkerDrag(Marker marker) {
-
+        
     }
 
     @Override
@@ -127,10 +127,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         String estado = address.get(0).getAdminArea();
         String pais = address.get(0).getCountryName();
         String codigoPostal = address.get(0).getPostalCode();
+        marker.setTitle(pais+"-"+estado+"-"+ciudad);
         marker.setSnippet("Direcciones: "+direcciones+"\n"+
-                "Ciudad: "+ciudad+"\n"+
-                "Provincia: "+estado+"\n"+
-                "Pais: "+pais+"\n"+
                 "Codigo Postal: "+codigoPostal+"\n");
+        marker.showInfoWindow();
     }
 }
