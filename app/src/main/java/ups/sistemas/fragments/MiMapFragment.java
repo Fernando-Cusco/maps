@@ -11,10 +11,12 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -38,7 +40,7 @@ import java.security.Provider;
 
 import ups.sistemas.R;
 
-public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
+public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener, LocationListener {
 
     private View rootView;
 
@@ -105,27 +107,8 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
         mMap.setMyLocationEnabled(true);
         mMap.getUiSettings().setMyLocationButtonEnabled(false);                                     //desactivamos el boton para el zoom de mi ubicacion
 
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                Toast.makeText(getContext(), "Latitud: " + location.getLatitude() + " Longuitud: " + location.getLongitude(), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String s) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String s) {
-
-            }
-        });
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, this);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this);
 
     }
 
@@ -165,5 +148,26 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
         if(!checkIfGpsActivate()){
             askUserbyGps();
         }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Toast.makeText(getContext(), "Latitud: " + location.getLatitude() + " Longuitud: " + location.getLongitude()+" Speed: "+location.getSpeed()+" Location: "+location.getProvider(), Toast.LENGTH_LONG).show();
+        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).draggable(true));
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
     }
 }
