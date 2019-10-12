@@ -33,6 +33,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -51,6 +52,8 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
 
     private LocationManager locationManager;
     private Location cuurentLocation;
+
+    private Marker marker;
 
 
     public MiMapFragment() {
@@ -153,7 +156,12 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
     @Override
     public void onLocationChanged(Location location) {
         Toast.makeText(getContext(), "Latitud: " + location.getLatitude() + " Longuitud: " + location.getLongitude()+" Speed: "+location.getSpeed()+" Location: "+location.getProvider(), Toast.LENGTH_LONG).show();
-        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).draggable(true));
+        if(marker == null){
+            marker =  mMap.addMarker (new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).draggable(true));
+        } else {
+            marker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
+
     }
 
     @Override
