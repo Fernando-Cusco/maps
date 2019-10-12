@@ -32,6 +32,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -54,6 +55,8 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
     private Location cuurentLocation;
 
     private Marker marker;
+
+    private CameraPosition cameraZoom;
 
 
     public MiMapFragment() {
@@ -88,6 +91,7 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+
         /*
         mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
@@ -97,6 +101,9 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
             }
         });
          */
+
+        mMap.setMyLocationEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(false);                                     //desactivamos el boton para el zoom de mi ubicacion
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    Activity#requestPermissions
@@ -107,20 +114,17 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
             // for Activity#requestPermissions for more details.
             return;
         }
-        mMap.setMyLocationEnabled(true);
-        mMap.getUiSettings().setMyLocationButtonEnabled(false);                                     //desactivamos el boton para el zoom de mi ubicacion
-
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, this);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this);
 
     }
 
 
-    private boolean checkIfGpsActivate(){
+    private boolean checkIfGpsActivate() {
         //preguntar por el gps
         try {
             int gps = Settings.Secure.getInt(getActivity().getContentResolver(), Settings.Secure.LOCATION_MODE);
-            if(gps == 0){
+            if (gps == 0) {
                 return false;
             } else {
                 return true;
@@ -131,7 +135,7 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
         }
     }
 
-    private void askUserbyGps(){
+    private void askUserbyGps() {
         new AlertDialog.Builder(getContext())
                 .setTitle("Activar Gps?")
                 .setMessage("El gps esta desactivado, quieres activarlo??")
@@ -148,20 +152,36 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
 
     @Override
     public void onClick(View view) {
-        if(!checkIfGpsActivate()){
+        if (!checkIfGpsActivate()) {
             askUserbyGps();
+        } else {
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    Activity#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for Activity#requestPermissions for more details.
+                return;
+            }
+            //obtener la ultima locacion conocida
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location == null) {
+                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            }
+            cuurentLocation = location;
+            if (cuurentLocation != null) {
+                createOrUpdateMarkerByLocation(location);
+                zoomToLocation(location);
+            }
         }
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        Toast.makeText(getContext(), "Latitud: " + location.getLatitude() + " Longuitud: " + location.getLongitude()+" Speed: "+location.getSpeed()+" Location: "+location.getProvider(), Toast.LENGTH_LONG).show();
-        if(marker == null){
-            marker =  mMap.addMarker (new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).draggable(true));
-        } else {
-            marker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
-        }
-
+        Toast.makeText(getContext(), "Latitud: " + location.getLatitude() + " Longuitud: " + location.getLongitude() + " Speed: " + location.getSpeed() + " Location: " + location.getProvider(), Toast.LENGTH_LONG).show();
+        createOrUpdateMarkerByLocation(location);
     }
 
     @Override
@@ -177,5 +197,23 @@ public class MiMapFragment extends Fragment implements OnMapReadyCallback, View.
     @Override
     public void onProviderDisabled(String s) {
 
+    }
+
+    private void createOrUpdateMarkerByLocation(Location location){
+        if (marker == null) {
+            marker = mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).draggable(true));
+        } else {
+            marker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
+    }
+
+    private void zoomToLocation(Location location){
+        cameraZoom = new CameraPosition.Builder()
+                .target(new LatLng(location.getLatitude(), location.getLongitude()))
+                .zoom(15)
+                .bearing(0)
+                .tilt(30)
+                .build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraZoom));
     }
 }
