@@ -123,7 +123,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     @Override
     public void onMarkerDrag(Marker marker) {
+        double latitud = marker.getPosition().latitude;
+        double longitud = marker.getPosition().longitude;
 
+        try {
+            //recuperamos la lista de direcciones
+            address = geocoder.getFromLocation(latitud, longitud, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String direcciones = address.get(0).getAddressLine(0);
+        String ciudad = address.get(0).getLocality();
+        String estado = address.get(0).getAdminArea();
+        String pais = address.get(0).getCountryName();
+        String codigoPostal = address.get(0).getPostalCode();
+        marker.setTitle(pais+"-"+estado+"-"+ciudad);
+        marker.setSnippet("Direcciones: "+direcciones+"\n"+
+                "Codigo Postal: "+codigoPostal+"\n");
+        marker.showInfoWindow();
     }
 
     @Override

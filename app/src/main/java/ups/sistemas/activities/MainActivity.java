@@ -2,8 +2,10 @@ package ups.sistemas.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import android.Manifest;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 
 import ups.sistemas.R;
 import ups.sistemas.fragments.MapFragment;
+import ups.sistemas.fragments.MiMapFragment;
 import ups.sistemas.fragments.Welcome;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         //guardamos el estado del fragment
         if(savedInstanceState == null){
             currentFragment = new Welcome();
@@ -43,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.menu_map:
                 currentFragment = new MapFragment();
+                break;
+            case R.id.menu_options:
+                currentFragment = new MiMapFragment();
                 break;
         }
         changeFragment(currentFragment);
